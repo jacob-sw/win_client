@@ -1,5 +1,7 @@
 #include "usblistener.h"
 #include <QWidget>
+#include <QTimer>
+
 
 UsbListener::UsbListener(QWidget *parent)
     : QWidget{parent},
@@ -7,7 +9,6 @@ UsbListener::UsbListener(QWidget *parent)
 {
 
 }
-
 
 bool UsbListener::nativeEventFilter(const QByteArray &eventType, void *message, qintptr *result)
 {
@@ -24,7 +25,9 @@ bool UsbListener::nativeEventFilter(const QByteArray &eventType, void *message, 
                 PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
                 if(lpdbv->dbcv_flags ==0)
                 {
-                    emit usbConn();
+                    QTimer::singleShot(1000, this, [this](){
+                        emit usbConn();
+                    });
                 }
             }
             break;
@@ -34,7 +37,9 @@ bool UsbListener::nativeEventFilter(const QByteArray &eventType, void *message, 
                 PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
                 if(lpdbv->dbcv_flags == 0)
                 {
-                    emit usbRemove();
+                    QTimer::singleShot(1000, this, [this](){
+                        emit usbRemove();
+                    });
                 }
             }
             break;

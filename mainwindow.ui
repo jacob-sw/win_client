@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>884</width>
-    <height>637</height>
+    <width>874</width>
+    <height>668</height>
    </rect>
   </property>
   <property name="font">
@@ -81,6 +81,12 @@ QLineEdit{
 
 
 </string>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>40</width>
+    <height>40</height>
+   </size>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -314,7 +320,7 @@ QLineEdit{
          <widget class="QLabel" name="label_4">
           <property name="text">
            <string>服务端
-/\
+/|\
 |
 |</string>
           </property>
@@ -340,7 +346,7 @@ QLineEdit{
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>/\
+           <string>/|\
 |
 |
 移动端</string>
@@ -373,7 +379,7 @@ QLineEdit{
            <string>服务端
 |
 |
-\/</string>
+\|/</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -399,7 +405,7 @@ QLineEdit{
           <property name="text">
            <string>|
 |
-\/
+\|/
 移动端</string>
           </property>
           <property name="alignment">
@@ -439,6 +445,37 @@ QLineEdit{
        </item>
       </layout>
      </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>版权所有:鼎兴智能科技(广州)有限公司</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_7">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>V1.01 Build20231120 技术支持: 深圳星辰大海软件</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

@@ -28,6 +28,7 @@ private slots:
     void detect_usb_arrival();
     void detect_usb_remove();
     void readAppVersionOutput();
+    void readAppVersionErrOutput();
 
 
 private:
@@ -38,5 +39,7 @@ private:
     QString adb_absolute_path;
 
     QProcess *app_version_process{nullptr};
+
+    qint64 app_ver{0};
 };
 #endif // MAINWINDOW_H
