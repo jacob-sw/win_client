@@ -1,0 +1,118 @@
+[2023-11-15 09:29:13] {Debug}{\mainwindow.cpp:65} 		 on_pushButton_clicked
+[2023-11-15 09:29:13] {Debug}{\mainwindow.cpp:66} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 09:29:13] {Debug}{\mainwindow.cpp:75} 		 readAllStandardOutput: "    versionName=12.2.2\r\n"
+[2023-11-15 09:29:46] {Debug}{mainwindow.cpp:65} 		 on_pushButton_clicked
+[2023-11-15 09:29:46] {Debug}{mainwindow.cpp:66} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 09:29:46] {Debug}{mainwindow.cpp:75} 		 readAllStandardOutput: "    versionName=12.2.2\r\n"
+[2023-11-15 11:04:14] {Debug}{mainwindow.cpp:66} 		 on_pushButton_clicked
+[2023-11-15 11:04:14] {Debug}{mainwindow.cpp:67} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:20:34] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:20:34] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:20:35] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:20:35] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:20:41] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:20:41] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:20:42] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:20:42] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:21:52] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:21:52] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:21:52] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:21:52] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:21:52] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:21:52] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:21:55] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:21:55] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:21:55] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:21:55] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:21:56] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:21:56] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:21:56] {Debug}{mainwindow.cpp:72} 		 on_pushButton_clicked
+[2023-11-15 11:21:56] {Debug}{mainwindow.cpp:73} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:05] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:05] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:05] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:05] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:05] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:05] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:08] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:08] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:08] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:08] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:12] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:12] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:12] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:12] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:16] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:16] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:17] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:17] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:18] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:18] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:27:18] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:27:18] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:29:26] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:29:26] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:29:26] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:29:26] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:32:24] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:32:24] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:32:24] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:32:24] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:32:25] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:32:25] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:32:28] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:32:28] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:32:28] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:32:28] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:34:25] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:34:25] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:34:26] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:34:26] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:35:05] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:35:05] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:35:05] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:35:05] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:35:49] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:35:49] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:35:49] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:35:49] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:37:14] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:37:14] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:37:14] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:37:14] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:37:15] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:37:15] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:39:24] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:39:24] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:39:25] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:39:25] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:55:34] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:55:34] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:55:34] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:55:34] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:25] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:25] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:25] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:25] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:26] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:26] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:28] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:28] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:28] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:28] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:29] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:29] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:29] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:29] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:30] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:30] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:30] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:30] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:31] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:31] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:31] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:31] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:32] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:32] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
+[2023-11-15 11:56:32] {Debug}{mainwindow.cpp:79} 		 on_pushButton_clicked
+[2023-11-15 11:56:32] {Debug}{mainwindow.cpp:80} 		 adb_absolute_path: "E:/qt_pro/build-win_client-Desktop_Qt_6_5_2_MinGW_64_bit-Debug/third-tools/adb.exe"
