@@ -6,6 +6,43 @@
 #include <QGraphicsDropShadowEffect>
 #include <QThread>
 #include <QTimer>
+#include "setconfig.h"
+#include <QMessageBox>
+#include <QUrlQuery>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QNetworkAccessManager>
+#include <QJsonParseError>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QDateTime>
+#include "progressdialog.h"
+
+
+
+
+static std::optional<QJsonObject> byteArrayToJsonObject(const QByteArray& data)
+{
+    QJsonParseError parseError;
+    const auto json = QJsonDocument::fromJson(data, &parseError);
+
+    if (parseError.error) {
+        qDebug() << "Response data not JSON:" << parseError.errorString()
+                 << "at" << parseError.offset << data;
+    }
+    return json.isObject() ? json.object() : std::optional<QJsonObject>(std::nullopt);
+}
+
+
+static std::unique_ptr<QFile> openFileForWrite(const QString &fileName)
+{
+    std::unique_ptr<QFile> file = std::make_unique<QFile>(fileName);
+    if (!file->open(QIODevice::WriteOnly))
+    {
+        return nullptr;
+    }
+    return file;
+}
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -37,34 +74,39 @@ MainWindow::MainWindow(QWidget *parent)
     qApp->installNativeEventFilter(usb_listener);
 
     work_path = QDir::currentPath();
-    readConfig();
     adb_absolute_path = work_path + "/third-tools/adb.exe";
-
     app_version_process = new QProcess(this);
+    app_upgrade_process = new QProcess(this);
+
     connect(app_version_process, &QProcess::readyReadStandardOutput,
             this, &MainWindow::readAppVersionOutput);
-
     connect(app_version_process, &QProcess::readyReadStandardError,
             this, &MainWindow::readAppVersionErrOutput);
+    connect(app_version_process, &QProcess::finished,
+            this, &MainWindow::readAppVersionFinish);
 
+
+    connect(app_upgrade_process, &QProcess::readyReadStandardOutput,
+            this, &MainWindow::readAppUpgradeOutput);
+    connect(app_upgrade_process, &QProcess::readyReadStandardError,
+            this, &MainWindow::readAppUpgradeErrOutput);
+    connect(app_upgrade_process, &QProcess::finished,
+            this, &MainWindow::upgradeFinish);
+
+
+
+    config = new SetConfig(this);
+    connect(config, &SetConfig::configChange,
+            this, &MainWindow::configChanged);
 
     on_pushButton_clicked();
+    on_pushButton_test_serv_conn_clicked();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-
-void MainWindow::readConfig()
-{
-    QSettings config(work_path + "/" + "config/config.ini", QSettings::IniFormat);
-    andriod_path = config.value("setting/andriod_path", "").toString();
-}
-
-
-
 
 
 void MainWindow::detect_usb_arrival()
@@ -105,6 +147,7 @@ void MainWindow::readAppVersionOutput()
     app_ver = app_ver_str.sliced(0, first_space_index).toInt();
     ui->lineEdit_app_conn->setStyleSheet("color:blue");
     ui->lineEdit_app_conn->setText(QString(tr("连接APP成功,APP版本:V%1")).arg(app_ver));
+    app_conn_success = true;
 }
 
 void MainWindow::readAppVersionErrOutput()
@@ -113,7 +156,293 @@ void MainWindow::readAppVersionErrOutput()
     qDebug() << "readAppVersionErrOutput:" << err_out;
     ui->lineEdit_app_conn->setText(tr("连接失败......."));
     ui->lineEdit_app_conn->setStyleSheet("color:red");
+    app_conn_success = false;
+    app_version_process_already_error = true;
+    app_ver = 0;
 }
+
+
+void MainWindow::readAppVersionFinish(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if(app_version_process_already_error)
+    {
+        app_version_process_already_error = false;
+        return;
+    }
+
+    if(0 != exitCode && exitStatus == QProcess::NormalExit)
+    {
+        ui->lineEdit_app_conn->setText(tr("移动端未安装电缆运维APP，请点击升级按钮进行安装...."));
+        ui->lineEdit_app_conn->setStyleSheet("color:red");
+        app_conn_success = true;
+        app_ver = 0;
+    }
+}
+
+
+void MainWindow::on_pushButton_set_clicked()
+{
+    config->show();
+}
+
+
+void MainWindow::configChanged()
+{
+    on_pushButton_test_serv_conn_clicked();
+}
+
+
+void MainWindow::on_pushButton_test_serv_conn_clicked()
+{
+    QUrl url(config->getServUrl());
+    if(!url.isValid())
+    {
+        QMessageBox::warning(this, tr(""), tr("服务端地址未配置或无效，请点击设置按钮进行配置"));
+        return;
+    }
+
+    ui->lineEdit_serv_conn->setText("连接服务器中....");
+    ui->lineEdit_serv_conn->setStyleSheet("color:black");
+
+    url.setPath(config->getServApiPath());
+    QUrlQuery paras;
+    paras.addQueryItem("systemType", "1");
+    url.setQuery(paras);
+    auto request = QNetworkRequest(url);
+    QNetworkReply* reply = m_accessManager.get(request);
+    QObject::connect(reply, &QNetworkReply::finished, reply, [reply,this](){
+        int httpStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        bool isReplyError = (reply->error() != QNetworkReply::NoError);
+        qDebug() << "Request to path" << reply->request().url().path() << "finished";
+        if (isReplyError || !(httpStatusCode >= 200 && httpStatusCode < 300))
+        {
+            qDebug() << "Error" << reply->error();
+            ui->lineEdit_serv_conn->setText(QString("连接服务器失败:%1....").arg(reply->errorString()));
+            ui->lineEdit_serv_conn->setStyleSheet("color:red");
+            serv_conn_success = false;
+            return;
+        }
+
+        std::optional<QJsonObject> json = byteArrayToJsonObject(reply->readAll());
+        if (json)
+        {
+            bool success = json->value("success").toBool();
+            QString msg = json->value("msg").toString();
+            if(!success)
+            {
+                ui->lineEdit_serv_conn->setText(QString("连接服务器失败:%1").arg(msg));
+                ui->lineEdit_serv_conn->setStyleSheet("color:red");
+                serv_conn_success = false;
+                delete reply;
+                return;
+            }
+
+            QJsonObject data = json->value("data").toObject();
+            serv_ver = data.value("versionCode").toInt();
+            latest_apk_path = data.value("systemFilePath").toString();
+            ui->lineEdit_serv_conn->setText(QString("连接服务器成功,移动端最新版本:%1").arg(serv_ver));
+            ui->lineEdit_serv_conn->setStyleSheet("color:blue");
+            qDebug() << "versionCode is:" << serv_ver << ",systemFilePath is:" << latest_apk_path;
+            serv_conn_success = true;
+        }
+        else
+        {
+            ui->lineEdit_serv_conn->setText("连接服务器失败....");
+            ui->lineEdit_serv_conn->setStyleSheet("color:red");
+            serv_conn_success = false;
+        }
+
+        delete reply;
+    });
+}
+
+
+void MainWindow::on_pushButton_upgrade_clicked()
+{
+    on_pushButton_clicked();
+    on_pushButton_test_serv_conn_clicked();
+
+
+    if(!app_conn_success)
+    {
+        QMessageBox::warning(this, tr(""), tr("APP连接失败,请确认USB线是否已经连接好"));
+        return;
+    }
+
+    if(!serv_conn_success || latest_apk_path.isEmpty())
+    {
+        QMessageBox::warning(this, tr(""), tr("服务端连接失败,请点击设置按钮并确认服务端配置是否正确"));
+        return;
+    }
+
+    upgrade_start_time = QDateTime::currentDateTime();
+
+    ui->textEdit->clear();
+    ui->textEdit->append(QString("开始准备升级.启动时间: %1\n"
+                                 "正在获取服务端最新版本……获取成功。最新版本值：%2\n"
+                                 "正在获取移动端当前版本……获取成功。当前版本值：%3")
+                             .arg(upgrade_start_time.toString("yyyy-MM-dd HH:mm:ss"))
+                             .arg(serv_ver)
+                             .arg(app_ver));
+
+    if(serv_ver == app_ver)
+    {
+        ui->textEdit->append(tr("经版本值对比：当前已是最新版，无需升级"));
+        return;
+    }
+
+    ui->textEdit->append(tr("经版本值对比：存在新版本，需要升级"));
+    ui->textEdit->append(tr("正在从服务端下载新版本APK文件"));
+
+    QUrl newUrl(config->getServUrl() + "/" + latest_apk_path);
+    QString fileName = newUrl.fileName();
+    fileName.prepend(work_path + "/temp/");
+
+    upgrade_apk_abs_path = fileName;
+    if (QFile::exists(fileName))
+    {
+        QFile::remove(fileName);
+    }
+
+    file = openFileForWrite(fileName);
+    if (!file)
+    {
+        ui->textEdit->append(QString("打开文件失败,文件路径:%1").arg(fileName));
+        return;
+    }
+
+    is_upgrade_process = true;
+    ui->pushButton_upgrade->setEnabled(false);
+    startRequest(newUrl);
+}
+
+
+
+void MainWindow::cancelDownload()
+{
+    httpRequestAborted = true;
+    reply->abort();
+}
+
+
+void MainWindow::httpReadyRead()
+{
+    if (file)
+        file->write(reply->readAll());
+}
+
+
+void MainWindow::httpFinished()
+{
+    QFileInfo fi;
+    if (file) {
+        fi.setFile(file->fileName());
+        file->close();
+        file.reset();
+    }
+
+    QNetworkReply::NetworkError error = reply->error();
+    const QString &errorString = reply->errorString();
+    reply.reset();
+    if (error != QNetworkReply::NoError)
+    {
+        QFile::remove(fi.absoluteFilePath());
+        if (!httpRequestAborted)
+        {
+            ui->textEdit->append(QString("文件%1下载失败:%2")
+                                     .arg(fi.fileName(), errorString));
+        }
+        else
+        {
+            ui->textEdit->append(QString("用户取消文件%1下载").arg(fi.fileName()));
+        }
+
+        if(is_upgrade_process)
+        {
+            is_upgrade_process = false;
+            ui->pushButton_upgrade->setEnabled(true);
+        }
+        return;
+    }
+
+    ui->textEdit->append(QString("文件%1下载成功").arg(fi.fileName()));
+    if(is_upgrade_process)
+    {
+        ui->textEdit->append(QString("正在执行升级APP命令……"));
+        this->app_upgrade_process->start(work_path + "/scripts/install_app.bat", QStringList() << adb_absolute_path
+            << work_path + "/temp/" + fi.fileName());
+    }
+}
+
+
+void MainWindow::readAppUpgradeOutput()
+{
+    QString out = app_upgrade_process->readAllStandardOutput();
+    //QString::contains(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    if(out.contains("pushed", Qt::CaseInsensitive))
+    {
+        QMessageBox::information(this, tr(""), tr("请在移动端操作安装电缆运维APP"));
+    }
+
+    ui->textEdit->append(out);
+}
+
+
+void MainWindow::readAppUpgradeErrOutput()
+{
+    ui->textEdit->append(app_upgrade_process->readAllStandardError());
+}
+
+
+void MainWindow::upgradeFinish(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    upgrade_end_time = QDateTime::currentDateTime();
+    if(0 == exitCode && exitStatus == QProcess::NormalExit)
+    {
+        ui->textEdit->append("升级成功.");
+        on_pushButton_clicked();
+    }
+    else
+    {
+        ui->textEdit->append("升级失败.");
+    }
+
+    ui->textEdit->append(QString("完成时间: %1,耗时:%2秒")
+                             .arg(upgrade_end_time.toString("yyyy-MM-dd HH:mm:ss"))
+                             .arg(upgrade_start_time.secsTo(upgrade_end_time)));
+
+    is_upgrade_process = false;
+    ui->pushButton_upgrade->setEnabled(true);
+    QFile::remove(upgrade_apk_abs_path);
+}
+
+
+
+void MainWindow::startRequest(const QUrl &requestedUrl)
+{
+    QUrl url = requestedUrl;
+    httpRequestAborted = false;
+
+    reply.reset(m_accessManager.get(QNetworkRequest(url)));
+    connect(reply.get(), &QNetworkReply::finished, this, &MainWindow::httpFinished);
+    connect(reply.get(), &QIODevice::readyRead, this, &MainWindow::httpReadyRead);
+
+    ProgressDialog *progressDialog = new ProgressDialog(requestedUrl.fileName(), this);
+    progressDialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(progressDialog, &QProgressDialog::canceled, this, &MainWindow::cancelDownload);
+    connect(reply.get(), &QNetworkReply::downloadProgress,
+            progressDialog, &ProgressDialog::networkReplyProgress);
+    connect(reply.get(), &QNetworkReply::finished, progressDialog, &ProgressDialog::hide);
+    progressDialog->show();
+}
+
+
+
+
+
+
+
+
 
 
 

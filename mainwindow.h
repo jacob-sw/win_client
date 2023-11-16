@@ -4,6 +4,10 @@
 #include <QMainWindow>
 #include <QString>
 #include <QProcess>
+#include <QUrl>
+#include <QDateTime>
+#include <QNetworkAccessManager>
+#include <QFile>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -11,6 +15,7 @@ QT_END_NAMESPACE
 
 
 class UsbListener;
+class SetConfig;
 
 class MainWindow : public QMainWindow
 {
@@ -19,7 +24,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void readConfig();
 
 
 
@@ -29,7 +33,22 @@ private slots:
     void detect_usb_remove();
     void readAppVersionOutput();
     void readAppVersionErrOutput();
+    void readAppVersionFinish(int exitCode, QProcess::ExitStatus exitStatus);
 
+    void readAppUpgradeOutput();
+    void readAppUpgradeErrOutput();
+    void upgradeFinish(int exitCode, QProcess::ExitStatus exitStatus);
+
+
+
+    void on_pushButton_set_clicked();
+    void on_pushButton_test_serv_conn_clicked();
+    void configChanged();
+    void on_pushButton_upgrade_clicked();
+    void cancelDownload();
+    void httpReadyRead();
+    void httpFinished();
+    void startRequest(const QUrl &requestedUrl);
 
 private:
     Ui::MainWindow *ui;
@@ -39,7 +58,30 @@ private:
     QString adb_absolute_path;
 
     QProcess *app_version_process{nullptr};
+    bool app_version_process_already_error{false};
 
-    qint64 app_ver{0};
+    QProcess *app_upgrade_process{nullptr};
+
+    bool app_conn_success{false};
+    int app_ver{0};
+
+    bool serv_conn_success{false};
+    int serv_ver{0};
+    QString latest_apk_path;
+
+    SetConfig *config{nullptr};
+    QNetworkAccessManager m_accessManager;
+
+
+
+    QDateTime upgrade_start_time;
+    QDateTime upgrade_end_time;
+
+    QScopedPointer<QNetworkReply, QScopedPointerDeleteLater> reply;
+    std::unique_ptr<QFile> file;
+    bool httpRequestAborted{false};
+    bool is_upgrade_process{false};
+
+    QString upgrade_apk_abs_path;
 };
 #endif // MAINWINDOW_H

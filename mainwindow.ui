@@ -60,11 +60,22 @@ QPushButton#pushButton_download {
 	border-color:  rgb(85, 170, 255);
 }
 
-QLineEdit{
+QLineEdit#lineEdit_app_conn{
 	background: transparent;
 	border-width: 0;
 	border-style: outset;
 }
+
+QLineEdit#lineEdit_serv_conn{
+	background: transparent;
+	border-width: 0;
+	border-style: outset;
+}
+
+QTextEdit#textEdit{
+	font: 11pt &quot;宋体&quot;;
+}
+
 
 
 
@@ -138,19 +149,6 @@ QLineEdit{
          <bool>true</bool>
         </property>
        </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton">
@@ -241,19 +239,6 @@ QLineEdit{
          <bool>true</bool>
         </property>
        </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_test_serv_conn">
@@ -439,7 +424,7 @@ QLineEdit{
        <item>
         <widget class="QTextEdit" name="textEdit">
          <property name="readOnly">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>
