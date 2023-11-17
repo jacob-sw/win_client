@@ -20,6 +20,9 @@
 
 
 
+QString MainWindow::task_download_path = "/api/windows/task/download";
+
+
 
 static std::optional<QJsonObject> byteArrayToJsonObject(const QByteArray& data)
 {
@@ -77,6 +80,8 @@ MainWindow::MainWindow(QWidget *parent)
     adb_absolute_path = work_path + "/third-tools/adb.exe";
     app_version_process = new QProcess(this);
     app_upgrade_process = new QProcess(this);
+    task_download_process = new QProcess(this);
+
 
     connect(app_version_process, &QProcess::readyReadStandardOutput,
             this, &MainWindow::readAppVersionOutput);
@@ -93,6 +98,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(app_upgrade_process, &QProcess::finished,
             this, &MainWindow::upgradeFinish);
 
+
+    connect(task_download_process, &QProcess::readyReadStandardOutput,
+            this, &MainWindow::downloadOutput);
+    connect(task_download_process, &QProcess::readyReadStandardError,
+            this, &MainWindow::downloadErrOutput);
+    connect(task_download_process, &QProcess::finished,
+            this, &MainWindow::downloadFinish);
 
 
     config = new SetConfig(this);
@@ -148,6 +160,7 @@ void MainWindow::readAppVersionOutput()
     ui->lineEdit_app_conn->setStyleSheet("color:blue");
     ui->lineEdit_app_conn->setText(QString(tr("连接APP成功,APP版本:V%1")).arg(app_ver));
     app_conn_success = true;
+    app_is_installed = true;
 }
 
 void MainWindow::readAppVersionErrOutput()
@@ -164,6 +177,7 @@ void MainWindow::readAppVersionErrOutput()
 
 void MainWindow::readAppVersionFinish(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    qDebug() << "readAppVersionFinish,exitCode:" << exitCode << ",exitStatus:" << exitStatus;
     if(app_version_process_already_error)
     {
         app_version_process_already_error = false;
@@ -175,6 +189,7 @@ void MainWindow::readAppVersionFinish(int exitCode, QProcess::ExitStatus exitSta
         ui->lineEdit_app_conn->setText(tr("移动端未安装电缆运维APP，请点击升级按钮进行安装...."));
         ui->lineEdit_app_conn->setStyleSheet("color:red");
         app_conn_success = true;
+        app_is_installed = false;
         app_ver = 0;
     }
 }
@@ -209,6 +224,8 @@ void MainWindow::on_pushButton_test_serv_conn_clicked()
     paras.addQueryItem("systemType", "1");
     url.setQuery(paras);
     auto request = QNetworkRequest(url);
+    //request.setAttribute(QNetworkRequest);
+
     QNetworkReply* reply = m_accessManager.get(request);
     QObject::connect(reply, &QNetworkReply::finished, reply, [reply,this](){
         int httpStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -332,6 +349,29 @@ void MainWindow::httpReadyRead()
 }
 
 
+void MainWindow::processRedirected(const QUrl &requestedUrl)
+{
+    QUrlQuery query(requestedUrl);
+    QString temp = query.queryItemValue("filePath");
+    QString fileName = temp.sliced(temp.lastIndexOf('/') + 1);
+    download_instruction_file_abs_path = work_path + "/temp/" + fileName;
+
+    qDebug() << "processRedirected, requestedUrl is:" << requestedUrl;
+    qDebug() << "download_instruction_file_abs_path is:" << download_instruction_file_abs_path;
+    if (QFile::exists(download_instruction_file_abs_path))
+    {
+        QFile::remove(download_instruction_file_abs_path);
+    }
+
+    file = openFileForWrite(download_instruction_file_abs_path);
+    if (!file)
+    {
+        ui->textEdit->append(QString("打开文件失败,文件路径:%1").arg(fileName));
+        return;
+    }
+}
+
+
 void MainWindow::httpFinished()
 {
     QFileInfo fi;
@@ -362,6 +402,12 @@ void MainWindow::httpFinished()
             is_upgrade_process = false;
             ui->pushButton_upgrade->setEnabled(true);
         }
+
+        if(is_task_download_process)
+        {
+            is_task_download_process = false;
+            ui->pushButton_download->setEnabled(true);
+        }
         return;
     }
 
@@ -371,6 +417,15 @@ void MainWindow::httpFinished()
         ui->textEdit->append(QString("正在执行升级APP命令……"));
         this->app_upgrade_process->start(work_path + "/scripts/install_app.bat", QStringList() << adb_absolute_path
             << work_path + "/temp/" + fi.fileName());
+    }
+
+    if(is_task_download_process)
+    {
+        ui->textEdit->append(QString("正在写入移动端目录……"));
+        this->task_download_process->start(work_path + "/scripts/download_instruction.bat", QStringList()
+            << adb_absolute_path
+            <<  config->getAppPath()
+            << download_instruction_file_abs_path);
     }
 }
 
@@ -407,13 +462,50 @@ void MainWindow::upgradeFinish(int exitCode, QProcess::ExitStatus exitStatus)
         ui->textEdit->append("升级失败.");
     }
 
-    ui->textEdit->append(QString("完成时间: %1,耗时:%2秒")
+    ui->textEdit->append(QString("完成时间: %1,耗时:%2毫秒")
                              .arg(upgrade_end_time.toString("yyyy-MM-dd HH:mm:ss"))
-                             .arg(upgrade_start_time.secsTo(upgrade_end_time)));
+                             .arg(upgrade_start_time.msecsTo(upgrade_end_time)));
 
     is_upgrade_process = false;
     ui->pushButton_upgrade->setEnabled(true);
     QFile::remove(upgrade_apk_abs_path);
+}
+
+
+
+
+void MainWindow::downloadOutput()
+{
+    QString out = task_download_process->readAllStandardOutput();
+    ui->textEdit->append(out);
+}
+
+void MainWindow::downloadErrOutput()
+{
+    QString err = task_download_process->readAllStandardError();
+    ui->textEdit->append(err);
+}
+
+void MainWindow::downloadFinish(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    task_download_end_time = QDateTime::currentDateTime();
+    if(0 == exitCode && exitStatus == QProcess::NormalExit)
+    {
+        ui->textEdit->append("写入成功");
+        ui->textEdit->append("下载指令结束,请在APP端读取指令文件");
+    }
+    else
+    {
+        ui->textEdit->append("写入失败");
+    }
+
+    ui->textEdit->append(QString("完成时间: %1,耗时:%2毫秒")
+                             .arg(task_download_end_time.toString("yyyy-MM-dd HH:mm:ss"))
+                             .arg(task_download_start_time.msecsTo(task_download_end_time)));
+
+    is_task_download_process = false;
+    ui->pushButton_download->setEnabled(true);
+    //QFile::remove(download_instruction_file_abs_path);
 }
 
 
@@ -423,27 +515,83 @@ void MainWindow::startRequest(const QUrl &requestedUrl)
     QUrl url = requestedUrl;
     httpRequestAborted = false;
 
-    reply.reset(m_accessManager.get(QNetworkRequest(url)));
+    QNetworkRequest http_req = QNetworkRequest(url);
+    http_req.setRawHeader("userName", config->getUser().toStdString().c_str());
+    http_req.setRawHeader("deviceType", "6");
+    http_req.setRawHeader("token", config->getToken().toStdString().c_str());
+
+    reply.reset(m_accessManager.get(http_req));
     connect(reply.get(), &QNetworkReply::finished, this, &MainWindow::httpFinished);
+    connect(reply.get(), &QNetworkReply::redirected, this, &MainWindow::processRedirected);
     connect(reply.get(), &QIODevice::readyRead, this, &MainWindow::httpReadyRead);
 
-    ProgressDialog *progressDialog = new ProgressDialog(requestedUrl.fileName(), this);
+
+    QString download_file_name;
+    if(is_upgrade_process)
+    {
+        download_file_name = requestedUrl.fileName();
+    }
+    ProgressDialog *progressDialog = new ProgressDialog(download_file_name, this);
     progressDialog->setAttribute(Qt::WA_DeleteOnClose);
     connect(progressDialog, &QProgressDialog::canceled, this, &MainWindow::cancelDownload);
     connect(reply.get(), &QNetworkReply::downloadProgress,
             progressDialog, &ProgressDialog::networkReplyProgress);
     connect(reply.get(), &QNetworkReply::finished, progressDialog, &ProgressDialog::hide);
+    connect(reply.get(), &QNetworkReply::redirected, progressDialog, &ProgressDialog::setDownloadFileName);
+
+
     progressDialog->show();
 }
 
 
 
+void MainWindow::on_pushButton_download_clicked()
+{
+    on_pushButton_clicked();
+    on_pushButton_test_serv_conn_clicked();
+
+    if(!app_conn_success)
+    {
+        QMessageBox::warning(this, tr(""), tr("APP连接失败,请确认USB线是否已经连接好"));
+        return;
+    }
+
+    if(!serv_conn_success)
+    {
+        QMessageBox::warning(this, tr(""), tr("服务端连接失败,请点击设置按钮并确认服务端配置是否正确"));
+        return;
+    }
 
 
+    if(!app_is_installed)
+    {
+        QMessageBox::warning(this, tr(""), tr("未安装APP,请先安装APP"));
+        return;
+    }
 
+    task_download_start_time = QDateTime::currentDateTime();
+    ui->textEdit->clear();
+    ui->textEdit->append(QString("开始准备下载.启动时间: %1\n"
+                                 "正在获取服务端最新版本……获取成功。最新版本值：%2\n"
+                                 "正在获取移动端当前版本……获取成功。当前版本值：%3")
+                             .arg(task_download_start_time.toString("yyyy-MM-dd HH:mm:ss"))
+                             .arg(serv_ver)
+                             .arg(app_ver));
 
+#if 0
+    if(serv_ver != app_ver)
+    {
+        ui->textEdit->append(tr("版本不一致,不能进行操作...."));
+        QMessageBox::information(this, tr(""), tr("版本号不一致,请先升级APP"));
+        return;
+    }
+#endif
 
+    ui->textEdit->append(tr("正在从服务端下载指令文件"));
 
-
-
+    QUrl newUrl(config->getServUrl() + "/" + task_download_path);
+    is_task_download_process = true;
+    ui->pushButton_download->setEnabled(false);
+    startRequest(newUrl);
+}
 

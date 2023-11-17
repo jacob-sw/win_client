@@ -12,6 +12,7 @@ public:
 
 public slots:
     void networkReplyProgress(qint64 bytesRead, qint64 totalBytes);
+    void setDownloadFileName(const QUrl &requestedUrl);
 };
 
 #endif // PROGRESSDIALOG_H

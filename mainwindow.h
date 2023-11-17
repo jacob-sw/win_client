@@ -40,6 +40,10 @@ private slots:
     void upgradeFinish(int exitCode, QProcess::ExitStatus exitStatus);
 
 
+    void downloadOutput();
+    void downloadErrOutput();
+    void downloadFinish(int exitCode, QProcess::ExitStatus exitStatus);
+
 
     void on_pushButton_set_clicked();
     void on_pushButton_test_serv_conn_clicked();
@@ -49,6 +53,9 @@ private slots:
     void httpReadyRead();
     void httpFinished();
     void startRequest(const QUrl &requestedUrl);
+    void processRedirected(const QUrl &requestedUrl);
+
+    void on_pushButton_download_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -63,6 +70,7 @@ private:
     QProcess *app_upgrade_process{nullptr};
 
     bool app_conn_success{false};
+    bool app_is_installed{false};
     int app_ver{0};
 
     bool serv_conn_success{false};
@@ -83,5 +91,12 @@ private:
     bool is_upgrade_process{false};
 
     QString upgrade_apk_abs_path;
+
+    static QString task_download_path;
+    QDateTime task_download_start_time;
+    QDateTime task_download_end_time;
+    bool is_task_download_process{false};
+    QProcess *task_download_process{nullptr};
+    QString download_instruction_file_abs_path;
 };
 #endif // MAINWINDOW_H
