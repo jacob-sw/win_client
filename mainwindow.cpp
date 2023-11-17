@@ -81,7 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
     app_version_process = new QProcess(this);
     app_upgrade_process = new QProcess(this);
     task_download_process = new QProcess(this);
-
+    task_upload_process = new QProcess(this);
 
     connect(app_version_process, &QProcess::readyReadStandardOutput,
             this, &MainWindow::readAppVersionOutput);
@@ -105,6 +105,13 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::downloadErrOutput);
     connect(task_download_process, &QProcess::finished,
             this, &MainWindow::downloadFinish);
+
+    connect(task_upload_process, &QProcess::readyReadStandardOutput,
+            this, &MainWindow::uploadOutput);
+    connect(task_upload_process, &QProcess::readyReadStandardError,
+            this, &MainWindow::uploadErrOutput);
+    connect(task_upload_process, &QProcess::finished,
+            this, &MainWindow::uploadFinish);
 
 
     config = new SetConfig(this);
@@ -505,8 +512,42 @@ void MainWindow::downloadFinish(int exitCode, QProcess::ExitStatus exitStatus)
 
     is_task_download_process = false;
     ui->pushButton_download->setEnabled(true);
-    //QFile::remove(download_instruction_file_abs_path);
+    QFile::remove(download_instruction_file_abs_path);
 }
+
+
+void MainWindow::uploadOutput()
+{
+    QString out = task_upload_process->readAllStandardOutput();
+    ui->textEdit->append(out);
+}
+
+void MainWindow::uploadErrOutput()
+{
+    QString err = task_upload_process->readAllStandardError();
+    ui->textEdit->append(err);
+}
+
+void MainWindow::uploadFinish(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    if(0 == exitCode && exitStatus == QProcess::NormalExit)
+    {
+        ui->textEdit->append("读取文件成功");
+        //上传文件至服务器
+
+    }
+    else
+    {
+        ui->textEdit->append("读取文件失败");
+        ui->textEdit->append("上传任务失败");
+        task_upload_end_time = QDateTime::currentDateTime();
+        ui->textEdit->append(QString("完成时间: %1,耗时:%2毫秒")
+                                 .arg(task_upload_end_time.toString("yyyy-MM-dd HH:mm:ss"))
+                                 .arg(task_upload_start_time.msecsTo(task_upload_end_time)));
+    }
+}
+
+
 
 
 
@@ -593,5 +634,57 @@ void MainWindow::on_pushButton_download_clicked()
     is_task_download_process = true;
     ui->pushButton_download->setEnabled(false);
     startRequest(newUrl);
+}
+
+
+void MainWindow::on_pushButton_upload_clicked()
+{
+    on_pushButton_clicked();
+    on_pushButton_test_serv_conn_clicked();
+
+    if(!app_conn_success)
+    {
+        QMessageBox::warning(this, tr(""), tr("APP连接失败,请确认USB线是否已经连接好"));
+        return;
+    }
+
+    if(!serv_conn_success)
+    {
+        QMessageBox::warning(this, tr(""), tr("服务端连接失败,请点击设置按钮并确认服务端配置是否正确"));
+        return;
+    }
+
+#if 0
+    if(!app_is_installed)
+    {
+        QMessageBox::warning(this, tr(""), tr("未安装APP,请先安装APP"));
+        return;
+    }
+#endif
+
+    task_upload_start_time = QDateTime::currentDateTime();
+    ui->textEdit->clear();
+    ui->textEdit->append(QString("开始准备上传.启动时间: %1\n"
+                                 "正在获取服务端最新版本……获取成功。最新版本值：%2\n"
+                                 "正在获取移动端当前版本……获取成功。当前版本值：%3")
+                             .arg(task_download_start_time.toString("yyyy-MM-dd HH:mm:ss"))
+                             .arg(serv_ver)
+                             .arg(app_ver));
+
+#if 0
+    if(serv_ver != app_ver)
+    {
+        ui->textEdit->append(tr("版本不一致,不能进行操作...."));
+        QMessageBox::information(this, tr(""), tr("版本号不一致,请先升级APP"));
+        return;
+    }
+#endif
+
+    ui->textEdit->append(tr("正在读取移动端文件"));
+    this->task_upload_process->start(work_path + "/scripts/upload.bat", QStringList()
+        << adb_absolute_path
+        << config->getAppPath() + "/*.zip"
+        << work_path + "/temp");
+
 }
 

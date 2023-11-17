@@ -45,6 +45,11 @@ private slots:
     void downloadFinish(int exitCode, QProcess::ExitStatus exitStatus);
 
 
+    void uploadOutput();
+    void uploadErrOutput();
+    void uploadFinish(int exitCode, QProcess::ExitStatus exitStatus);
+
+
     void on_pushButton_set_clicked();
     void on_pushButton_test_serv_conn_clicked();
     void configChanged();
@@ -56,6 +61,8 @@ private slots:
     void processRedirected(const QUrl &requestedUrl);
 
     void on_pushButton_download_clicked();
+
+    void on_pushButton_upload_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -98,5 +105,11 @@ private:
     bool is_task_download_process{false};
     QProcess *task_download_process{nullptr};
     QString download_instruction_file_abs_path;
+
+    QDateTime task_upload_start_time;
+    QDateTime task_upload_end_time;
+    bool is_task_upload_process{false};
+    QProcess *task_upload_process{nullptr};
+
 };
 #endif // MAINWINDOW_H
