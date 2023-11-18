@@ -1,11 +1,21 @@
 #include "progressdialog.h"
 #include <QUrlQuery>
 
-ProgressDialog::ProgressDialog(QString filename, QWidget *parent)
+
+ProgressDialog::ProgressDialog(QString filename, bool is_download, QWidget *parent)
     : QProgressDialog(parent)
 {
-    setWindowTitle(tr("Download Progress"));
-    setLabelText(tr("Downloading %1.").arg(filename));
+    if(is_download)
+    {
+        setWindowTitle(tr("Download Progress"));
+        setLabelText(tr("Downloading %1.").arg(filename));
+    }
+    else
+    {
+        setWindowTitle(tr("Upload Progress"));
+        setLabelText(tr("Upload %1.").arg(filename));
+    }
+
     setMinimum(0);
     setValue(0);
     setMinimumDuration(0);
@@ -15,6 +25,11 @@ ProgressDialog::ProgressDialog(QString filename, QWidget *parent)
 
 void ProgressDialog::networkReplyProgress(qint64 bytesRead, qint64 totalBytes)
 {
+    if(0 == totalBytes)
+    {
+        return;
+    }
+
     setMaximum(totalBytes);
     setValue(bytesRead);
 }

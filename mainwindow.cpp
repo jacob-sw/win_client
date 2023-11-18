@@ -17,6 +17,7 @@
 #include <QJsonObject>
 #include <QDateTime>
 #include "progressdialog.h"
+#include <QHttpMultiPart>
 
 
 
@@ -82,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
     app_upgrade_process = new QProcess(this);
     task_download_process = new QProcess(this);
     task_upload_process = new QProcess(this);
+    delete_app_uploadfile_process = new QProcess(this);
 
     connect(app_version_process, &QProcess::readyReadStandardOutput,
             this, &MainWindow::readAppVersionOutput);
@@ -114,12 +116,24 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::uploadFinish);
 
 
+    connect(delete_app_uploadfile_process, &QProcess::readyReadStandardOutput,
+            this, &MainWindow::deleteOutput);
+    connect(delete_app_uploadfile_process, &QProcess::readyReadStandardError,
+            this, &MainWindow::deleteErrOutput);
+    connect(delete_app_uploadfile_process, &QProcess::finished,
+            this, &MainWindow::deleteFinish);
+
+
     config = new SetConfig(this);
     connect(config, &SetConfig::configChange,
             this, &MainWindow::configChanged);
 
-    on_pushButton_clicked();
-    on_pushButton_test_serv_conn_clicked();
+
+
+    QTimer::singleShot(1000, this, [this](){
+        on_pushButton_clicked();
+        on_pushButton_test_serv_conn_clicked();
+    });
 }
 
 MainWindow::~MainWindow()
@@ -147,7 +161,6 @@ void MainWindow::on_pushButton_clicked()
     ui->lineEdit_app_conn->setStyleSheet("color:black");
     ui->lineEdit_app_conn->setText(tr("检测中......."));
 
-    qDebug() << "adb_absolute_path:" << adb_absolute_path;
     QTimer::singleShot(1000, this, [this](){
         this->app_version_process->start(work_path + "/scripts/get_app_ver.bat", QStringList() << adb_absolute_path);
     });
@@ -231,13 +244,11 @@ void MainWindow::on_pushButton_test_serv_conn_clicked()
     paras.addQueryItem("systemType", "1");
     url.setQuery(paras);
     auto request = QNetworkRequest(url);
-    //request.setAttribute(QNetworkRequest);
 
     QNetworkReply* reply = m_accessManager.get(request);
     QObject::connect(reply, &QNetworkReply::finished, reply, [reply,this](){
         int httpStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         bool isReplyError = (reply->error() != QNetworkReply::NoError);
-        qDebug() << "Request to path" << reply->request().url().path() << "finished";
         if (isReplyError || !(httpStatusCode >= 200 && httpStatusCode < 300))
         {
             qDebug() << "Error" << reply->error();
@@ -247,7 +258,9 @@ void MainWindow::on_pushButton_test_serv_conn_clicked()
             return;
         }
 
-        std::optional<QJsonObject> json = byteArrayToJsonObject(reply->readAll());
+        QByteArray all_data = reply->readAll();
+        qDebug() << "on_pushButton_test_serv_conn_clicked get data:" << QString::fromLocal8Bit(all_data);
+        std::optional<QJsonObject> json = byteArrayToJsonObject(all_data);
         if (json)
         {
             bool success = json->value("success").toBool();
@@ -378,6 +391,57 @@ void MainWindow::processRedirected(const QUrl &requestedUrl)
     }
 }
 
+
+
+void MainWindow::httpUpLoadFinished()
+{
+    QNetworkReply::NetworkError error = reply->error();
+    const QString &errorString = reply->errorString();
+
+    if(upload_file->isOpen())
+    {
+        upload_file->close();
+    }
+    upload_file->reset();
+
+    if (error != QNetworkReply::NoError)
+    {
+        qDebug() << "httpUpLoadFinished with error:" << errorString;
+        ui->textEdit->append(QString("文件%1上传失败:%2")
+                                 .arg(zip_file_name, errorString));
+        reply.reset();
+        QFile::remove(work_path + "/temp/" + zip_file_name);
+        ui->pushButton_upload->setEnabled(true);
+        return;
+    }
+
+    QByteArray all_data = reply->readAll();
+    qDebug() << "httpUpLoadFinished all_data is:" << QString::fromLocal8Bit(all_data);
+    std::optional<QJsonObject> json = byteArrayToJsonObject(all_data);
+    bool success = json->value("success").toBool();
+    QString msg = json->value("msg").toString();
+    if(!success)
+    {
+        ui->textEdit->append(QString("文件%1上传失败:%2")
+                                 .arg(zip_file_name, msg));
+        reply.reset();
+        QFile::remove(work_path + "/temp/" + zip_file_name);
+        ui->pushButton_upload->setEnabled(true);
+        return;
+    }
+
+    reply.reset();
+
+    QString delete_path = work_path + "/temp/" + zip_file_name;
+    QFile::remove(delete_path);
+
+    ui->textEdit->append(QString("上传完成"));
+    ui->textEdit->append(QString("删除移动端文件,避免重复上传...."));
+
+    this->delete_app_uploadfile_process->start(work_path + "/scripts/delete_upload_file.bat", QStringList()
+        << adb_absolute_path
+        << config->getAppPath() + "/" + zip_file_name);
+}
 
 void MainWindow::httpFinished()
 {
@@ -516,6 +580,38 @@ void MainWindow::downloadFinish(int exitCode, QProcess::ExitStatus exitStatus)
 }
 
 
+void MainWindow::deleteOutput()
+{
+    QString out = delete_app_uploadfile_process->readAllStandardOutput();
+    ui->textEdit->append(out);
+}
+
+void MainWindow::deleteErrOutput()
+{
+    QString out = delete_app_uploadfile_process->readAllStandardError();
+    ui->textEdit->append(out);
+}
+
+void MainWindow::deleteFinish(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    task_upload_end_time = QDateTime::currentDateTime();
+    if(0 == exitCode && exitStatus == QProcess::NormalExit)
+    {
+        ui->textEdit->append("删除成功");
+    }
+    else
+    {
+        ui->textEdit->append(QString("移动端删除文件:%1失败").arg(zip_file_name));
+    }
+
+    ui->textEdit->append(QString("上传任务结束.\n完成时间: %1,耗时:%2毫秒")
+                             .arg(task_upload_end_time.toString("yyyy-MM-dd HH:mm:ss"))
+                             .arg(task_upload_start_time.msecsTo(task_upload_end_time)));
+
+    ui->pushButton_upload->setEnabled(true);
+}
+
+
 void MainWindow::uploadOutput()
 {
     QString out = task_upload_process->readAllStandardOutput();
@@ -532,8 +628,59 @@ void MainWindow::uploadFinish(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if(0 == exitCode && exitStatus == QProcess::NormalExit)
     {
-        ui->textEdit->append("读取文件成功");
         //上传文件至服务器
+        QDir temp(work_path + "/temp/");
+        QStringList zip_list = temp.entryList(QStringList() << "*.zip");
+        if(zip_list.size() == 1)
+        {
+            ui->textEdit->append("开始上传文件到服务端...");
+            zip_file_name = zip_list[0];
+            qDebug() << "zip_file_path is:" << zip_file_name;
+            upload_file = new QFile(work_path + "/temp/" + zip_file_name);
+            ui->textEdit->append(QString("已读取到文件:%1,文件大小:%2 bytes")
+                                     .arg(zip_file_name)
+                                     .arg(upload_file->size()));
+
+
+            QUrl upload_url(config->getServUrl() + "/api/uploadFile");
+            QNetworkRequest http_req = QNetworkRequest(upload_url);
+            http_req.setRawHeader("userName", config->getUser().toStdString().c_str());
+            http_req.setRawHeader("deviceType", "6");
+            http_req.setRawHeader("token", config->getToken().toStdString().c_str());
+
+            QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+            QHttpPart filePart;
+            filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/zip"));
+            filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant(QString("form-data; name=\"file\"; filename=\"%1\"")
+                                                                                   .arg(zip_file_name)));
+            upload_file->open(QIODevice::ReadOnly);
+            filePart.setBodyDevice(upload_file);
+            multiPart->append(filePart);
+
+            // 发送HTTP POST请求
+            reply.reset(m_accessManager.post(http_req, multiPart));
+            multiPart->setParent(reply.get());
+
+            connect(reply.get(), &QNetworkReply::finished, this, &MainWindow::httpUpLoadFinished);
+
+            ProgressDialog *progressDialog = new ProgressDialog(zip_file_name, false, this);
+            progressDialog->setAttribute(Qt::WA_DeleteOnClose);
+            connect(progressDialog, &QProgressDialog::canceled, this, &MainWindow::cancelDownload);
+
+            connect(reply.get(), &QNetworkReply::uploadProgress,
+                    progressDialog, &ProgressDialog::networkReplyProgress);
+            connect(reply.get(), &QNetworkReply::finished, progressDialog, &ProgressDialog::hide);
+        }
+        else
+        {
+            qDebug() << "temp directory has more than one zip:" << zip_list;
+            ui->textEdit->append("未读取到文件,请先在移动端打包任务数据");
+            task_upload_end_time = QDateTime::currentDateTime();
+            ui->textEdit->append(QString("完成时间: %1,耗时:%2毫秒")
+                                     .arg(task_upload_end_time.toString("yyyy-MM-dd HH:mm:ss"))
+                                     .arg(task_upload_start_time.msecsTo(task_upload_end_time)));
+            ui->pushButton_upload->setEnabled(true);
+        }
 
     }
     else
@@ -544,6 +691,8 @@ void MainWindow::uploadFinish(int exitCode, QProcess::ExitStatus exitStatus)
         ui->textEdit->append(QString("完成时间: %1,耗时:%2毫秒")
                                  .arg(task_upload_end_time.toString("yyyy-MM-dd HH:mm:ss"))
                                  .arg(task_upload_start_time.msecsTo(task_upload_end_time)));
+
+        ui->pushButton_upload->setEnabled(true);
     }
 }
 
@@ -572,15 +721,13 @@ void MainWindow::startRequest(const QUrl &requestedUrl)
     {
         download_file_name = requestedUrl.fileName();
     }
-    ProgressDialog *progressDialog = new ProgressDialog(download_file_name, this);
+    ProgressDialog *progressDialog = new ProgressDialog(download_file_name, true, this);
     progressDialog->setAttribute(Qt::WA_DeleteOnClose);
     connect(progressDialog, &QProgressDialog::canceled, this, &MainWindow::cancelDownload);
     connect(reply.get(), &QNetworkReply::downloadProgress,
             progressDialog, &ProgressDialog::networkReplyProgress);
     connect(reply.get(), &QNetworkReply::finished, progressDialog, &ProgressDialog::hide);
     connect(reply.get(), &QNetworkReply::redirected, progressDialog, &ProgressDialog::setDownloadFileName);
-
-
     progressDialog->show();
 }
 
@@ -603,7 +750,6 @@ void MainWindow::on_pushButton_download_clicked()
         return;
     }
 
-
     if(!app_is_installed)
     {
         QMessageBox::warning(this, tr(""), tr("未安装APP,请先安装APP"));
@@ -619,15 +765,12 @@ void MainWindow::on_pushButton_download_clicked()
                              .arg(serv_ver)
                              .arg(app_ver));
 
-#if 0
     if(serv_ver != app_ver)
     {
         ui->textEdit->append(tr("版本不一致,不能进行操作...."));
         QMessageBox::information(this, tr(""), tr("版本号不一致,请先升级APP"));
         return;
     }
-#endif
-
     ui->textEdit->append(tr("正在从服务端下载指令文件"));
 
     QUrl newUrl(config->getServUrl() + "/" + task_download_path);
@@ -654,32 +797,29 @@ void MainWindow::on_pushButton_upload_clicked()
         return;
     }
 
-#if 0
     if(!app_is_installed)
     {
         QMessageBox::warning(this, tr(""), tr("未安装APP,请先安装APP"));
         return;
     }
-#endif
 
     task_upload_start_time = QDateTime::currentDateTime();
     ui->textEdit->clear();
     ui->textEdit->append(QString("开始准备上传.启动时间: %1\n"
                                  "正在获取服务端最新版本……获取成功。最新版本值：%2\n"
                                  "正在获取移动端当前版本……获取成功。当前版本值：%3")
-                             .arg(task_download_start_time.toString("yyyy-MM-dd HH:mm:ss"))
+                             .arg(task_upload_start_time.toString("yyyy-MM-dd HH:mm:ss"))
                              .arg(serv_ver)
                              .arg(app_ver));
 
-#if 0
     if(serv_ver != app_ver)
     {
         ui->textEdit->append(tr("版本不一致,不能进行操作...."));
         QMessageBox::information(this, tr(""), tr("版本号不一致,请先升级APP"));
         return;
     }
-#endif
 
+    ui->pushButton_upload->setEnabled(false);
     ui->textEdit->append(tr("正在读取移动端文件"));
     this->task_upload_process->start(work_path + "/scripts/upload.bat", QStringList()
         << adb_absolute_path

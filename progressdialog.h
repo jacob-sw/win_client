@@ -8,7 +8,7 @@ class ProgressDialog : public QProgressDialog {
     Q_OBJECT
 
 public:
-    explicit ProgressDialog(QString filename, QWidget *parent = nullptr);
+    explicit ProgressDialog(QString filename, bool is_download = true, QWidget *parent = nullptr);
 
 public slots:
     void networkReplyProgress(qint64 bytesRead, qint64 totalBytes);

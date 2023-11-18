@@ -20,8 +20,8 @@
    <string>电缆管线离散型信息化运维系统-文件同步客户端</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>C:/Users/Administrator/Desktop/1.png</normaloff>C:/Users/Administrator/Desktop/1.png</iconset>
+   <iconset resource="resource.qrc">
+    <normaloff>:/images/1.png</normaloff>:/images/1.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QPushButton{ 
@@ -465,6 +465,8 @@ QTextEdit#textEdit{
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -50,6 +50,11 @@ private slots:
     void uploadFinish(int exitCode, QProcess::ExitStatus exitStatus);
 
 
+    void deleteOutput();
+    void deleteErrOutput();
+    void deleteFinish(int exitCode, QProcess::ExitStatus exitStatus);
+
+
     void on_pushButton_set_clicked();
     void on_pushButton_test_serv_conn_clicked();
     void configChanged();
@@ -63,6 +68,8 @@ private slots:
     void on_pushButton_download_clicked();
 
     void on_pushButton_upload_clicked();
+
+    void httpUpLoadFinished();
 
 private:
     Ui::MainWindow *ui;
@@ -110,6 +117,10 @@ private:
     QDateTime task_upload_end_time;
     bool is_task_upload_process{false};
     QProcess *task_upload_process{nullptr};
+    QString zip_file_name;
 
+
+    QProcess *delete_app_uploadfile_process{nullptr};
+    QFile *upload_file{nullptr};
 };
 #endif // MAINWINDOW_H
