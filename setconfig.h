@@ -32,7 +32,7 @@ private slots:
 
 private:
     Ui::SetConfig *ui;
-    QSettings *config_set{nullptr};
+    //QSettings *config_set{nullptr};
     QString serv_api_path;
 
 };

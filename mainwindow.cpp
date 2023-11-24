@@ -187,7 +187,7 @@ void MainWindow::readAppVersionErrOutput()
 {
     QString err_out = app_version_process->readAllStandardError();
     qDebug() << "readAppVersionErrOutput:" << err_out;
-    ui->lineEdit_app_conn->setText(tr("连接失败......."));
+    ui->lineEdit_app_conn->setText(tr("连接失败,请确认移动设备USB线已连接,且电脑已安装手机助手."));
     ui->lineEdit_app_conn->setStyleSheet("color:red");
     app_conn_success = false;
     app_version_process_already_error = true;
@@ -249,10 +249,19 @@ void MainWindow::on_pushButton_test_serv_conn_clicked()
     QObject::connect(reply, &QNetworkReply::finished, reply, [reply,this](){
         int httpStatusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         bool isReplyError = (reply->error() != QNetworkReply::NoError);
-        if (isReplyError || !(httpStatusCode >= 200 && httpStatusCode < 300))
+        if (isReplyError)
         {
-            qDebug() << "Error" << reply->error();
-            ui->lineEdit_serv_conn->setText(QString("连接服务器失败:%1....").arg(reply->errorString()));
+            qDebug() << "Error" << reply->errorString();
+            ui->lineEdit_serv_conn->setText(QString("连接服务器失败,请确认服务端地址是否正确且网络连接正常"));
+            ui->lineEdit_serv_conn->setStyleSheet("color:red");
+            serv_conn_success = false;
+            return;
+        }
+
+        if(!(httpStatusCode >= 200 && httpStatusCode < 300))
+        {
+            qDebug() << "httpStatusCode Error:" << httpStatusCode;
+            ui->lineEdit_serv_conn->setText(QString("连接服务器失败:服务器返回%1").arg(httpStatusCode));
             ui->lineEdit_serv_conn->setStyleSheet("color:red");
             serv_conn_success = false;
             return;
@@ -312,8 +321,17 @@ void MainWindow::on_pushButton_upgrade_clicked()
         return;
     }
 
-    upgrade_start_time = QDateTime::currentDateTime();
 
+    if(!app_is_installed)
+    {
+        auto selection = QMessageBox::question(this, "", tr("移动端未安装APP程序,是否执行安装?"));
+        if(selection == QMessageBox::No)
+        {
+            return;
+        }
+    }
+
+    upgrade_start_time = QDateTime::currentDateTime();
     ui->textEdit->clear();
     ui->textEdit->append(QString("开始准备升级.启动时间: %1\n"
                                  "正在获取服务端最新版本……获取成功。最新版本值：%2\n"
@@ -329,6 +347,17 @@ void MainWindow::on_pushButton_upgrade_clicked()
     }
 
     ui->textEdit->append(tr("经版本值对比：存在新版本，需要升级"));
+
+    if(app_is_installed)
+    {
+        auto selection = QMessageBox::question(this, "", tr("检测到有新版本,是否需要升级到最新版本?"));
+        if(selection == QMessageBox::No)
+        {
+            return;
+        }
+    }
+
+
     ui->textEdit->append(tr("正在从服务端下载新版本APK文件"));
 
     QUrl newUrl(config->getServUrl() + "/" + latest_apk_path);
@@ -516,7 +545,7 @@ void MainWindow::readAppUpgradeOutput()
 
 void MainWindow::readAppUpgradeErrOutput()
 {
-    ui->textEdit->append(app_upgrade_process->readAllStandardError());
+    ui->textEdit->append(QString(app_upgrade_process->readAllStandardError().toStdString().c_str()));
 }
 
 
@@ -712,22 +741,16 @@ void MainWindow::startRequest(const QUrl &requestedUrl)
 
     reply.reset(m_accessManager.get(http_req));
     connect(reply.get(), &QNetworkReply::finished, this, &MainWindow::httpFinished);
-    connect(reply.get(), &QNetworkReply::redirected, this, &MainWindow::processRedirected);
+    //connect(reply.get(), &QNetworkReply::redirected, this, &MainWindow::processRedirected);
     connect(reply.get(), &QIODevice::readyRead, this, &MainWindow::httpReadyRead);
 
-
-    QString download_file_name;
-    if(is_upgrade_process)
-    {
-        download_file_name = requestedUrl.fileName();
-    }
-    ProgressDialog *progressDialog = new ProgressDialog(download_file_name, true, this);
+    ProgressDialog *progressDialog = new ProgressDialog(requestedUrl.fileName(), true, this);
     progressDialog->setAttribute(Qt::WA_DeleteOnClose);
     connect(progressDialog, &QProgressDialog::canceled, this, &MainWindow::cancelDownload);
     connect(reply.get(), &QNetworkReply::downloadProgress,
             progressDialog, &ProgressDialog::networkReplyProgress);
     connect(reply.get(), &QNetworkReply::finished, progressDialog, &ProgressDialog::hide);
-    connect(reply.get(), &QNetworkReply::redirected, progressDialog, &ProgressDialog::setDownloadFileName);
+    //connect(reply.get(), &QNetworkReply::redirected, progressDialog, &ProgressDialog::setDownloadFileName);
     progressDialog->show();
 }
 
@@ -750,6 +773,7 @@ void MainWindow::on_pushButton_download_clicked()
         return;
     }
 
+
     if(!app_is_installed)
     {
         QMessageBox::warning(this, tr(""), tr("未安装APP,请先安装APP"));
@@ -765,18 +789,94 @@ void MainWindow::on_pushButton_download_clicked()
                              .arg(serv_ver)
                              .arg(app_ver));
 
+
     if(serv_ver != app_ver)
     {
         ui->textEdit->append(tr("版本不一致,不能进行操作...."));
         QMessageBox::information(this, tr(""), tr("版本号不一致,请先升级APP"));
         return;
     }
+
+
     ui->textEdit->append(tr("正在从服务端下载指令文件"));
 
-    QUrl newUrl(config->getServUrl() + "/" + task_download_path);
-    is_task_download_process = true;
-    ui->pushButton_download->setEnabled(false);
-    startRequest(newUrl);
+    QUrl url(config->getServUrl());
+    url.setPath(task_download_path);
+    auto request = QNetworkRequest(url);
+    request.setRawHeader("userName", config->getUser().toStdString().c_str());
+    request.setRawHeader("deviceType", "6");
+    request.setRawHeader("token", config->getToken().toStdString().c_str());
+
+    QNetworkReply* taskReply = m_accessManager.get(request);
+    QObject::connect(taskReply, &QNetworkReply::finished, taskReply, [taskReply,this](){
+        int httpStatusCode = taskReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        bool isReplyError = (taskReply->error() != QNetworkReply::NoError);
+        if (isReplyError)
+        {
+            qDebug() << "on_pushButton_download_clicked Error" << taskReply->errorString();
+            QMessageBox::information(this, tr(""), tr("连接服务器失败"));
+            delete taskReply;
+            return;
+        }
+
+        if(!(httpStatusCode >= 200 && httpStatusCode < 300))
+        {
+            qDebug() << "on_pushButton_download_clicked httpStatusCode Error:" << httpStatusCode;
+            QMessageBox::information(this, tr(""), QString(tr("服务器返回http %1").arg(httpStatusCode)));
+            delete taskReply;
+            return;
+        }
+
+        QByteArray all_data = taskReply->readAll();
+        qDebug() << "on_pushButton_download_clicked get data:" << QString::fromLocal8Bit(all_data);
+        std::optional<QJsonObject> json = byteArrayToJsonObject(all_data);
+        if (json)
+        {
+            bool success = json->value("success").toBool();
+            QString msg = json->value("msg").toString();
+            if(!success)
+            {
+                QMessageBox::information(this, tr(""), msg);
+                delete taskReply;
+                return;
+            }
+
+
+            QJsonObject data = json->value("data").toObject();
+            QString task_file_path = data.value("filePath").toString();
+            qDebug() << "task_file_path is:" << task_file_path;
+            delete taskReply;
+
+            QUrl newUrl(config->getServUrl() + "/" + task_file_path);
+            QString taskFileName = newUrl.fileName();
+            taskFileName.prepend(work_path + "/temp/");
+
+            download_instruction_file_abs_path = taskFileName;
+            if (QFile::exists(download_instruction_file_abs_path))
+            {
+                QFile::remove(download_instruction_file_abs_path);
+            }
+
+            file = openFileForWrite(download_instruction_file_abs_path);
+            if (!file)
+            {
+                ui->textEdit->append(QString("打开文件失败,文件路径:%1").arg(download_instruction_file_abs_path));
+                return;
+            }
+
+            //is_upgrade_process = true;
+            is_task_download_process = true;
+            ui->pushButton_download->setEnabled(false);
+            startRequest(newUrl);
+        }
+        else
+        {
+            QMessageBox::information(this, tr(""), tr("服务器返回json解析失败"));
+            delete taskReply;
+        }
+
+        //delete taskReply;
+    });
 }
 
 
