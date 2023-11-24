@@ -1,2 +1,2 @@
 @echo off
-cmd /c %1 shell dumpsys package com.sea.cable.well | findstr versionCode
+%1 shell dumpsys package com.sea.cable.well | findstr versionCode
