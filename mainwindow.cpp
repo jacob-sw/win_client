@@ -671,7 +671,11 @@ void MainWindow::uploadFinish(int exitCode, QProcess::ExitStatus exitStatus)
                                      .arg(upload_file->size()));
 
 
-            QUrl upload_url(config->getServUrl() + "/api/uploadFile");
+            QUrl upload_url(config->getServUrl() + "/api/uploadFile/form");
+            QUrlQuery paras;
+            paras.addQueryItem("formId", "15");
+            paras.addQueryItem("fieldId", "114");
+            upload_url.setQuery(paras);
             QNetworkRequest http_req = QNetworkRequest(upload_url);
             http_req.setRawHeader("userName", config->getUser().toStdString().c_str());
             http_req.setRawHeader("deviceType", "6");
