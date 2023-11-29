@@ -162,6 +162,7 @@ void MainWindow::on_pushButton_clicked()
     ui->lineEdit_app_conn->setText(tr("检测中......."));
 
     QTimer::singleShot(1000, this, [this](){
+        this->app_version_process->setWorkingDirectory(work_path + "/scripts");
         this->app_version_process->start(work_path + "/scripts/get_app_ver.bat", QStringList() << adb_absolute_path);
     });
 }
@@ -659,8 +660,9 @@ void MainWindow::uploadFinish(int exitCode, QProcess::ExitStatus exitStatus)
     {
         //上传文件至服务器
         QDir temp(work_path + "/temp/");
+        temp.setSorting(QDir::Time);
         QStringList zip_list = temp.entryList(QStringList() << "*.zip");
-        if(zip_list.size() == 1)
+        if(!zip_list.isEmpty())
         {
             ui->textEdit->append("开始上传文件到服务端...");
             zip_file_name = zip_list[0];

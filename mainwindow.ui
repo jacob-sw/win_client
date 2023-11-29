@@ -456,7 +456,7 @@ QTextEdit#textEdit{
       <item>
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>V1.01 Build20231125 技术支持: 深圳星辰大海软件</string>
+         <string>V1.01 Build20231129 技术支持: 深圳星辰大海软件</string>
         </property>
        </widget>
       </item>
