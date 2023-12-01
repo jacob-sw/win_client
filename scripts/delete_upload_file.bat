@@ -1,2 +1,2 @@
 @echo off
-%1 shell rm -rf %2
+"%1" shell rm -rf %2
