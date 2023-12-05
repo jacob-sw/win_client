@@ -7,6 +7,8 @@
 #define FILE_SIZE_10M (1024 * 1024 * 10)
 
 
+
+
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     Q_UNUSED(context);
