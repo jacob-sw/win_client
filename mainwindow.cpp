@@ -240,7 +240,7 @@ void MainWindow::on_pushButton_test_serv_conn_clicked()
     ui->lineEdit_serv_conn->setText("连接服务器中....");
     ui->lineEdit_serv_conn->setStyleSheet("color:black");
 
-    url.setPath(config->getServApiPath());
+    url.setPath(url.path() + config->getServApiPath());
     QUrlQuery paras;
     paras.addQueryItem("systemType", "1");
     url.setQuery(paras);
@@ -807,7 +807,7 @@ void MainWindow::on_pushButton_download_clicked()
     ui->textEdit->append(tr("正在从服务端下载指令文件"));
 
     QUrl url(config->getServUrl());
-    url.setPath(task_download_path);
+    url.setPath(url.path() + task_download_path);
     auto request = QNetworkRequest(url);
     request.setRawHeader("userName", config->getUser().toStdString().c_str());
     request.setRawHeader("deviceType", "6");

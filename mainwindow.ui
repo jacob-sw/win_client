@@ -436,7 +436,7 @@ QTextEdit#textEdit{
       <item>
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>版权所有:鼎兴智能科技(广州)有限公司</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -456,7 +456,7 @@ QTextEdit#textEdit{
       <item>
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>V1.01 Build20231129 技术支持: 深圳星辰大海软件</string>
+         <string>V1.01 Build20231228 </string>
         </property>
        </widget>
       </item>
